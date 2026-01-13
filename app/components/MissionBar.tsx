@@ -149,6 +149,9 @@ export const MissionBar = () => {
                     <div className="text-[10px] text-gray-500 mt-1 flex items-center gap-1">
                         CPQ <ChevronRight size={10} /> RCA
                     </div>
+                    <div className="text-[10px] text-gray-400 italic mt-0.5">
+                        Version 2
+                    </div>
                 </div>
                 <div className="h-6 w-px bg-gray-200 mx-2" />
                 <div className="flex gap-4 text-sm font-medium">
