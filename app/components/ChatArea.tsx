@@ -1,20 +1,26 @@
 "use client";
 import React, { useRef, useEffect, useState } from 'react';
-import { useDemo } from './DemoContext';
+import { useDemo, ChatMessage } from './DemoContext';
 import { ChatMessageItem } from './ChatMessageItem';
 import { ArrowRight } from 'lucide-react';
 import { TaskCard } from './TaskCard';
 import { ThinkingBubble } from './ThinkingBubble';
 
-const ChatInput = () => {
-    const { handleUserMessage, isTyping } = useDemo();
+export interface ChatAreaProps {
+    messages?: ChatMessage[];
+    onSendMessage?: (text: string) => void;
+    // Allow overriding context values
+}
+
+const ChatInput = ({ onSend }: { onSend: (text: string) => void }) => {
+    const { isTyping } = useDemo();
     const [inputValue, setInputValue] = useState("");
 
     const handleSubmit = (e?: React.FormEvent) => {
         e?.preventDefault();
         if (!inputValue.trim() || isTyping) return;
 
-        handleUserMessage(inputValue);
+        onSend(inputValue);
         setInputValue("");
     };
 
@@ -45,50 +51,45 @@ const ChatInput = () => {
                     <ArrowRight size={16} />
                 </button>
             </form>
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-full pb-2 pointer-events-none">
-                {/* Optional: Floating scroll to bottom indicator could go here */}
-            </div>
         </div>
     );
 };
 
-export const ChatArea = () => {
-    const { chatHistory, isTyping, currentTask, typingLabel } = useDemo();
+export const ChatArea = ({ messages, onSendMessage }: ChatAreaProps) => {
+    const demo = useDemo();
+    const history = messages || demo.chatHistory;
+    const handleSend = onSendMessage || demo.handleUserMessage;
+
     const bottomRef = useRef<HTMLDivElement>(null);
     const scrollRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        // Scroll to bottom when new messages arrive
         if (scrollRef.current) {
             scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
         }
-    }, [chatHistory, isTyping, currentTask]);
+    }, [history, demo.isTyping, demo.currentTask]);
 
     return (
         <div className="flex flex-col h-full overflow-hidden bg-white">
-            {/* Messages List */}
             <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-6 scroll-smooth">
-
-                {/* 1. Render all messages */}
-                {chatHistory.map((msg, index) => (
+                {history.map((msg, index) => (
                     <ChatMessageItem
                         key={msg.id}
                         msg={msg}
-                        isLast={index === chatHistory.length - 1}
+                        isLast={index === history.length - 1}
                     />
                 ))}
 
-                {/* 2. Render the Active Task Card at the bottom ONLY if it is NOT already rendered inline */}
-                {currentTask && !chatHistory.some(m => m.meta?.taskId === currentTask.id) && (
-                    <TaskCard task={currentTask} />
+                {/* Only show TaskCard if using default demo history AND tasks exist */}
+                {!messages && demo.currentTask && !history.some(m => m.meta?.taskId === demo.currentTask?.id) && (
+                    <TaskCard task={demo.currentTask} />
                 )}
 
-                {isTyping && <ThinkingBubble label={typingLabel || "Thinking..."} />}
+                {demo.isTyping && <ThinkingBubble label={demo.typingLabel || "Thinking..."} />}
                 <div ref={bottomRef} />
             </div>
 
-            {/* Sticky Input Area */}
-            <ChatInput />
+            <ChatInput onSend={handleSend} />
         </div>
     );
 };

@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { KnowledgeBacklog, KnowledgeItem } from './KnowledgeBacklog';
 import { KnowledgeWorkbench } from './KnowledgeWorkbench';
+import { useDemo } from '../DemoContext';
 
 const MOCK_ITEMS: KnowledgeItem[] = [
     {
@@ -43,17 +44,23 @@ const MOCK_ITEMS: KnowledgeItem[] = [
 ];
 
 export const ExpertWorkspace = () => {
-    const [selectedId, setSelectedId] = useState<string | null>('AMB-001'); // Default select first
+    const { selectKnowledgeItem } = useDemo();
+    const [selectedId, setSelectedId] = useState<string | null>(null);
+
+    const handleSelect = (item: KnowledgeItem) => {
+        setSelectedId(item.id);
+        selectKnowledgeItem(item);
+    };
 
     const selectedItem = MOCK_ITEMS.find(i => i.id === selectedId) || null;
 
     return (
-        <div className="flex w-full h-full bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div className="flex w-full h-full overflow-hidden">
             {/* Left: Backlog (35%) */}
             <KnowledgeBacklog
                 items={MOCK_ITEMS}
                 selectedId={selectedId}
-                onSelect={(item) => setSelectedId(item.id)}
+                onSelect={handleSelect}
             />
 
             {/* Right: Workbench (Rest) */}

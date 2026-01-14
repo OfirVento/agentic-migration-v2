@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useDemo } from './DemoContext';
 import { ChevronRight, CheckCircle2, Loader2, AlertCircle, Info, Search, GitCompare, Code2, CalendarClock, PlayCircle, ShieldCheck, Trophy } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -137,6 +138,7 @@ const JourneyProgress = () => {
 
 export const MissionBar = () => {
     const { mission } = useDemo();
+    const pathname = usePathname();
 
     return (
         <div className="h-20 border-b border-gray-200 bg-white flex items-center px-6 justify-between shrink-0 z-50 shadow-sm relative">
@@ -155,8 +157,8 @@ export const MissionBar = () => {
                 </div>
                 <div className="h-6 w-px bg-gray-200 mx-2" />
                 <div className="flex gap-4 text-sm font-medium">
-                    <Link href="/" className="text-gray-500 hover:text-blue-600 transition-colors">Migration</Link>
-                    <Link href="/expert" className="text-gray-500 hover:text-blue-600 transition-colors">Expert Tools</Link>
+                    <Link href="/" className={cn("transition-colors", pathname === '/' ? 'text-blue-600 font-bold' : 'text-gray-500 hover:text-blue-600')}>Migration</Link>
+                    <Link href="/expert" className={cn("transition-colors", pathname === '/expert' ? 'text-blue-600 font-bold' : 'text-gray-500 hover:text-blue-600')}>Knowledge Workspace</Link>
                 </div>
             </div>
 

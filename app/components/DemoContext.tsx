@@ -122,6 +122,8 @@ interface DemoContextType {
     blockers: Blocker[];
     resolveBlocker: (id: string, option: string) => void;
     tasksHistory: Record<string, AgentTask>; // New: Persistent task history
+    expertChatHistory: ChatMessage[]; // New
+    selectKnowledgeItem: (item: any) => void; // New
 }
 
 // --- Seed Data ---
@@ -178,6 +180,13 @@ export const DemoProvider = ({ children }: { children: ReactNode }) => {
     const [typingLabel, setTypingLabel] = useState<string | null>(null);
     const [expertOutputs, setExpertOutputs] = useState<{ id: string, title: string, time: string }[]>([]);
     const [blockers, setBlockers] = useState<Blocker[]>([]);
+    const [expertChatHistory, setExpertChatHistory] = useState<ChatMessage[]>([{
+        id: 'init_expert',
+        role: 'system',
+        agentName: 'Knowledge Agent',
+        content: 'I am the Knowledge Agent. Select an item from the backlog to begin analysis.',
+        timestamp: Date.now()
+    }]);
 
     // Sync currentTask to tasksHistory whenever it changes
     useEffect(() => {
@@ -211,6 +220,51 @@ export const DemoProvider = ({ children }: { children: ReactNode }) => {
                 timestamp: Date.now()
             }]);
         }, delay);
+    };
+
+    // Expert Chat Helper
+    const addExpertMessage = (agentName: string, role: AgentRole, content: string, actions?: ActionButton[]) => {
+        setIsTyping(true);
+        setTypingLabel(`${agentName} is typing...`);
+        setTimeout(() => {
+            setIsTyping(false);
+            setTypingLabel(null);
+            setExpertChatHistory(prev => [...prev, {
+                id: Date.now().toString(),
+                agentName,
+                role,
+                content,
+                actions,
+                timestamp: Date.now()
+            }]);
+        }, 1000); // Shorter delay for expert tools
+    };
+
+    const selectKnowledgeItem = (item: any) => {
+        // Simulate analysis delay
+        setIsTyping(true);
+        setTypingLabel("Analyzing item context...");
+
+        setTimeout(() => {
+            let insight = "";
+            let actions: ActionButton[] = [];
+
+            if (item.status === 'detected') {
+                insight = `I've analyzed "**${item.title}**". \n\n**System Insight**:\nI noticed this pattern occurs in 45% of Quote Lines for EMEA region. It deviates from the standard 'Global Discount' matrix. \n\n**Recommendation**:\nThis looks like a 'Shadow Policy'. How would you like to proceed?`;
+                actions = [
+                    { label: "Ask a Human", action_id: "expert_ask_human" },
+                    { label: "Upload Evidence", action_id: "expert_upload_evidence" },
+                    { label: "Codify Rule", action_id: "expert_codify" }
+                ];
+            } else if (item.status === 'verifying') {
+                insight = `Item "**${item.title}**" is currently pending verification. We are waiting for input from Stakeholders.`;
+                actions = [{ label: "Check Status", action_id: "expert_check_status" }];
+            } else {
+                insight = `Item "**${item.title}**" is fully codified and merged into the rule set. No further action needed.`;
+            }
+
+            addExpertMessage("Knowledge Agent", "assistant", insight, actions);
+        }, 1500);
     };
 
     // Expert Action Handler
@@ -269,6 +323,18 @@ export const DemoProvider = ({ children }: { children: ReactNode }) => {
 
                 console.log(successMsg);
             }
+
+            // Handle Chat-triggered Expert Actions
+            if (action === 'expert_ask_human') {
+                addExpertMessage("Knowledge Agent", "assistant", "Opening communication channel. detailed context has been drafted for the EMEA Sales Director. Would you like to review the draft?", [{ label: "Review Draft", action_id: "review_draft" }]);
+            }
+            if (action === 'expert_upload_evidence') {
+                addExpertMessage("Knowledge Agent", "assistant", "Ready to ingest. Please drag and drop your policy documents or email screenshots here.");
+            }
+            if (action === 'expert_codify') {
+                addExpertMessage("Knowledge Agent", "assistant", "Converting pattern to Pricing Procedure... \n\nDone. Rule 'EMEA_Manual_Discount' created.", [{ label: "View Rule", action_id: "view_rule" }]);
+            }
+
         }, 1500);
 
         // Simulation for Blocker (Hidden Trigger)
@@ -1376,7 +1442,10 @@ export const DemoProvider = ({ children }: { children: ReactNode }) => {
     }, []);
 
     return (
-        <DemoContext.Provider value={{ currentState, chatHistory, currentCanvas, mission, handleAction, handleUserMessage, transitionTo, currentTask, tasksHistory, isTyping, typingLabel, expertOutputs, handleExpertAction, blockers, resolveBlocker, setCurrentCanvas }}>
+        <DemoContext.Provider value={{
+            currentState, chatHistory, currentCanvas, mission, handleAction, handleUserMessage, transitionTo, currentTask, tasksHistory, isTyping, typingLabel, expertOutputs, handleExpertAction, blockers, resolveBlocker, setCurrentCanvas,
+            expertChatHistory, selectKnowledgeItem
+        }}>
             {children}
         </DemoContext.Provider>
     );
