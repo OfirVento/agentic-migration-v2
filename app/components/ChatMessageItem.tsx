@@ -3,7 +3,7 @@ import { User, Layers, Radio, Search, Play, CheckCircle, ArrowRight, Bot } from 
 import { cn } from '@/lib/utils';
 import { TypewriterText } from './TypewriterText';
 import { AgentRole, ChatMessage, useDemo } from './DemoContext';
-import { TaskCard } from '../page'; // We'll need to export TaskCard from page.tsx or move it
+import { TaskCard } from './TaskCard';
 
 // Re-using logic from page.tsx for Avatar
 const AgentAvatar = ({ role, displayName, avatarUrl }: { role: AgentRole, displayName?: string, avatarUrl?: string }) => {
