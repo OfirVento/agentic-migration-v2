@@ -134,7 +134,10 @@ export const KnowledgeWorkbench = ({ item }: KnowledgeWorkbenchProps) => {
 
                         <div className="bg-gray-50 rounded-xl p-6 w-full border border-gray-200 mb-8 text-left">
                             <div className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Extracted Logic</div>
-                            <code className="text-sm text-gray-800 block font-mono bg-white p-3 rounded border border-gray-200">
+                            <p className="text-sm font-medium text-gray-900 mb-3">
+                                I found a policy: <span className="italic text-blue-700 bg-blue-50 px-1 rounded">'EMEA Directors can approve up to 15% verbally.'</span>
+                            </p>
+                            <code className="text-sm text-gray-800 block font-mono bg-white p-4 rounded-lg border border-gray-200 leading-relaxed shadow-sm">
                                 IF (Region == 'EMEA' AND Amount {'>'} 50,000) {"{"} <br />
                                 &nbsp;&nbsp; APPLY_DISCOUNT(15%); <br />
                                 {"}"}
